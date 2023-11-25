@@ -3,5 +3,10 @@
     "**cache**": true,
     "*/.ipynb_checkpoints": true,
     "**.ipynb_checkpoints": true,
-    "**/.ipynb_checkpoints/**": true}
+    "**/.ipynb_checkpoints/**": true,
+    "*.docx" : true, 
+    "*.pdf" : true,
+    "*.tmp" : true,
+    "**/*.pptm*" : true,
+}
 }
