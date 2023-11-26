@@ -7,6 +7,6 @@
     "*.docx" : true, 
     "*.pdf" : true,
     "*.tmp" : true,
-    "**/*.pptm*" : true,
-}
+    "**/*.pptm*" : true}, 
+"workbench.editor.centeredLayoutAutoResize": true,
 }
