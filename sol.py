@@ -4,94 +4,171 @@ import ipyleaflet
 from ipywidgets import HTML
 import altair as alt
 import pandas as pd
-
-# solara run sol.py --host=0.0.0.0
-
-# Import the TAHMO module
+import datetime
+import solara
+import ipyleaflet
 import TAHMO
+from ipywidgets import HTML
+import openmeteo_requests
+from openmeteo_sdk.Variable import Variable
+from openmeteo_sdk.Aggregation import Aggregation
+import requests_cache
+import pandas as pd
+from retry_requests import retry
 
-# The demo credentials listed below give you access to three pre-defined stations. 
+# Setup the Open-Meteo API client with cache and retry on error
+cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
+retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
+openmeteo = openmeteo_requests.Client(session = retry_session)
+
+# Create a TAHMO API wrapper and set credentials
 api = TAHMO.apiWrapper()
-
-# set the credentials
 api.setCredentials('demo', 'DemoPassword1!')
 
-stations = list(api.getStations())
+station_list = ["TA00134", "TA00252", "TA00567"]
 
-zoom = solara.reactive(7)
-center = solara.reactive([5.53, -0.20])
-station = solara.reactive('TA00134')
+# station "TA00134" is empty, therefore we remove it from the list
+station_list.remove("TA00134")
 
-def request_precip_data(station):
-    startDate = '2023-01-01'
-    endDate = '2023-11-22'
-    variables = ['pr']
+station_data = {}
+
+for station in station_list:
+    station_data[station] = api.getStations()[station]
+
+station_default = 'TA00252'
+center_default = (station_data[station_default]['location']['latitude'], station_data[station_default]['location']['longitude'])
+zoom_default = 9
+
+
+# Define reactive variables for station data
+station = solara.reactive(station_default)
+zoom = solara.reactive(zoom_default)
+center = solara.reactive(center_default)
+
+
+def set_station(value):
+    station.value = value
+    center.value = (station_data[value]['location']['latitude'], station_data[value]['location']['longitude'])
+
+@ solara.component
+def StationSelect():
+    """Solara component for a station selection dropdown."""
+    solara.Select(label="station", values=station_list, value=station.value, on_value=set_station, style={"z-index": "10000"})
     
-    df = api.getMeasurements(station.value, startDate=startDate, endDate=endDate, variables=variables)
-    try:
-        df.index.name = 'Timestamp'
-        df.to_csv('data/timeseries.csv', na_rep='', date_format='%Y-%m-%d %H:%M')
-    except:
-        df = pd.DataFrame(columns=['Timestamp', 'pr'])
-        df.to_csv('data/timeseries.csv', na_rep='', date_format='%Y-%m-%d %H:%M')
+@solara.component
+def View():
+    """Solara component for displaying a map view with a marker for the selected station."""
+    
+    ipyleaflet.Map.element(center=center.value,
+                           zoom=9,
+                           on_center=center.set,
+                        scroll_wheel_zoom=True, 
+                        layers=[ipyleaflet.TileLayer.element(url=ipyleaflet.basemaps.OpenStreetMap.Mapnik.build_url())] + [ipyleaflet.Marker.element(location=(station_data[s]['location']['latitude'], station_data[s]['location']['longitude']), draggable=False) for s in station_list] 
+                        )
 
-def load_precip_data():
-    try:
-        df = pd.read_csv("data/timeseries.csv", parse_dates=True, index_col=0).reset_index().rename(columns={"Timestamp" : "date", "pr": "precipitation"})
-        df.loc[:,'date'] = df['date'].dt.date
-        df = df.groupby('date').max().reset_index().dropna()
-    except:
+def process_tahmo_precip_data(df):
+    """Load the precipitation data from the TAHMO API and return a pandas dataframe"""
+    df = df.reset_index().rename(columns={"Timestamp" : "date", "pr": "precipitation"})
+    df['date'] = pd.to_datetime(df['date'])
+    df.loc[:,'date'] = df['date'].dt.date
+    df = df.groupby('date').sum().reset_index().dropna()
+    df['date'] = pd.to_datetime(df['date'])
+    return df
+    
+def request_precip_data(station, variables=['pr'], startDate='2023-01-01', endDate='2023-11-22'):
+    """Request precipitation data from the TAHMO API and return a pandas dataframe."""
+    df = api.getMeasurements(station, startDate=startDate, endDate=endDate, variables=variables)
+    if df.empty:
         df = pd.DataFrame(columns=['date', 'precipitation'])
+        return df
+    else:
+        df.index.name = 'Timestamp'
+        df = df.reset_index()
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+        df.loc[:,'date'] = df['Timestamp'].dt.date
+        df = df.drop(columns=['Timestamp']).groupby('date').max().reset_index().dropna()
+        df['date'] = pd.to_datetime(df['date'])
+        df = df.rename(columns={"pr": "precipitation"})
+        return df
+    
+def get_ecmwf_precipitation_ensemble(lon, lat):
+
+	"""Retrieve the ECMWF precipitation forecast from the Open-Meteo API and return a JSON object"""
+	
+	url = "https://ensemble-api.open-meteo.com/v1/ensemble"
+	
+	params = {
+		"latitude": lat,
+		"longitude": lon,
+		"forecast_days": 5,
+		"past_days": 30,
+		"hourly": "precipitation",
+		"models": "ecmwf_ifs04"
+	}
+	responses = openmeteo.weather_api(url, params=params)
+
+	response = responses[0]
+	
+	# Process hourly data
+	hourly = response.Hourly()
+	hourly_variables = list(map(lambda i: hourly.Variables(i), range(0, hourly.VariablesLength())))
+	hourly_precipitation = filter(lambda x: x.Variable() == Variable.precipitation, hourly_variables)
+
+	hourly_data = {"date": pd.date_range(
+		start = pd.to_datetime(hourly.Time(), unit = "s"),
+		end = pd.to_datetime(hourly.TimeEnd(), unit = "s"),
+		freq = pd.Timedelta(seconds = hourly.Interval()),
+		inclusive = "left"
+	)}
+	# Process all members
+	for variable in hourly_precipitation:
+		member = variable.EnsembleMember()
+		hourly_data[f"precipitation_member{member}"] = variable.ValuesAsNumpy()
+
+	df = pd.DataFrame(data=hourly_data)
+	return df
+
+def process_ecmwf_ensemble_precip_data(df):
+    """Load the precipitation data from the Open-Meteo API and return a pandas dataframe"""
+    df = df.rename(columns={"date": "Timestamp"})
+    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+    df.loc[:,'date'] = df['Timestamp'].dt.date
+    df['date'] = pd.to_datetime(df['date'])
+    df = df.drop(columns=['Timestamp'])
+    df = df.groupby('date').sum().reset_index()
+    
     return df
 
-
-
-
-def Timeseries(station):
-    request_precip_data(station)
-    df = load_precip_data()
-    with solara.Card("Timeseries"):
-        chart =  alt.Chart(df).mark_bar().encode(x="date", y="precipitation", tooltip=['precipitation', 'date']).properties(width=800, height=350).interactive()
-        solara.display(chart)
-
-def get_station_data(station):
-    station_data = api.getStations()[station.value]
-    name = station_data['location']['name']
-    latitude = station_data['location']['latitude']
-    longitude = station_data['location']['longitude']
-    return name, latitude, longitude
-
 @solara.component
-def Controls(stations):
-    solara.Select(label='station', values=stations, value=station)
-
-
-@solara.component
-def View(station, center, zoom):
-    name, latitude, longitude = get_station_data(station)
-    center.value = [latitude, longitude]
-    m = ipyleaflet.Map(center=center.value, zoom=zoom.value)
-    marker = ipyleaflet.Marker(location=(latitude, longitude), draggable=True)
-    marker.popup = HTML(str(name))
-    m.add_layer(marker)
-    solara.display(m)
+def Timeseries():
+    
+    """Solara component for a timeseries chart of precipitation."""	
+    variables = ['pr']
+    today = datetime.datetime.now()
+    startDate = today - datetime.timedelta(days=30)
+    df_tahmo = api.getMeasurements(station.value, startDate=startDate.strftime("%Y-%m-%d"), endDate=today.strftime("%Y-%m-%d"), variables=variables)
+    df_tahmo.index.name = 'Timestamp'
+    df_tahmo = process_tahmo_precip_data(df_tahmo)
+    bar_tahmo =  alt.Chart(df_tahmo).mark_bar(opacity=0.75,).encode(x="date", y="precipitation", tooltip=['precipitation', 'date']).interactive()
+    df_hourly = get_ecmwf_precipitation_ensemble(station_data[station.value]['location']['longitude'], station_data[station.value]['location']['latitude'])
+    df_ecmwf_ensemble = process_ecmwf_ensemble_precip_data(df_hourly)
+    ensemble_df = pd.DataFrame(data={'min' : df_ecmwf_ensemble.set_index('date').min(axis=1), 'max' : df_ecmwf_ensemble.set_index('date').max(axis=1), 'mean' : df_ecmwf_ensemble.set_index('date').mean(axis=1)}).reset_index()
+    area_ecmwf = alt.Chart(ensemble_df).mark_area(opacity=0.25, color='orange').encode(x='date', y='min', y2='max').interactive()
+    bar_ecmwf = alt.Chart(ensemble_df).mark_bar(opacity=0.75, color='orange').encode(x='date', y='mean', tooltip=['mean', 'date'])
+    rule = alt.Chart(pd.DataFrame({'date': [today.strftime("%Y-%m-%d")], 'color': ['black']})).mark_rule().encode(x='date:T') 
+    chart = area_ecmwf + rule + bar_tahmo + bar_ecmwf
+    solara.display(chart.properties(width=1200, height=300).interactive())
 
 @solara.component
 def Page():
-    with solara.AppBarTitle():
-        solara.Text("Precipitation forecast and observations")
+    """Solara component for a page with two cards: View and StationSelect."""
+    with solara.Column(style={"min-width": "500px", "height": "500px"}):
+        with solara.Row():
+            StationSelect()
+        with solara.Columns([1, 2]):
+            with solara.Card():
+                View()
+            with solara.Card():
+                Timeseries()
 
-    # with solara.Sidebar():
-    #     solara.Markdown("## I am in the sidebar")
-        
-    solara.Info("I'm in the main content area, put your main content here")
-
-    with solara.Card("", margin=1):
-        solara.Markdown("## Choose a station and see the timeseries and the map")
-        Controls(stations)
-        
-    with solara.Columns([1, 1]):
-        View(station, center, zoom)
-        Timeseries(station)
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+Page()
