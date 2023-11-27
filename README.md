@@ -4,16 +4,24 @@
 
 This repository contains a Jupyter Notebook that guides you through the process of creating interactive dashboards in Python using TAHMO and Open-Meteo APIs. By following this tutorial, you will learn how to retrieve weather data from both services, process the data, and create an informative dashboard using Solara.
 
+Ce référentiel contient un notebook Jupyter qui vous guide à travers le processus de création de tableaux de bord interactifs en Python en utilisant les API TAHMO et Open-Meteo. En suivant ce tutoriel, vous apprendrez comment récupérer des données météorologiques à partir des deux services, traiter les données et créer un tableau de bord informatif à l'aide de Solara.
+
 ![dashboard](https://github.com/tstolp/training-seasonal-forecasting/assets/33895313/d45b001d-8042-4523-846b-2770c6363548)
 
-## Prerequisites
+## Prerequisites - Prérequis
 Before you begin, ensure you have the following:
-A GitHub account
-Access to GitHub Codespaces
+- A GitHub account
+- Access to GitHub Codespaces
+
+Avant de commencer, assurez-vous de disposer des éléments suivants :
+- Un compte GitHub
+- Accès à GitHub Codespaces
 
 ### 1. Open GitHub Codespaces 
 Clone the Repository:
 Open the repository in GitHub Codespaces by clicking the "Code" button and selecting "Open with Codespaces."
+
+
 
 Another option is to clone this repository and work locally using devcontainers
 ```bash
