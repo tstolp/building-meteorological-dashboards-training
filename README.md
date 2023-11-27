@@ -1,6 +1,6 @@
 
-Dashboard Creation with OpenWeather API in Python
-Overview
+# training-weather-forecast-dashboards
+
 This repository contains a Jupyter Notebook that guides you through the process of creating interactive dashboards in Python using OpenWeather APIs. By following this tutorial, you will learn how to retrieve weather data from OpenWeatherMap, process the data, and create an informative and visually appealing dashboard using popular Python libraries.
 
 ## Prerequisites
