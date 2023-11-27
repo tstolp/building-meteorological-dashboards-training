@@ -15,6 +15,7 @@ from openmeteo_sdk.Aggregation import Aggregation
 import requests_cache
 import pandas as pd
 from retry_requests import retry
+import os 
 
 # Setup the Open-Meteo API client with cache and retry on error
 cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
@@ -23,19 +24,16 @@ openmeteo = openmeteo_requests.Client(session = retry_session)
 
 # Create a TAHMO API wrapper and set credentials
 api = TAHMO.apiWrapper()
-api.setCredentials('demo', 'DemoPassword1!')
+api.setCredentials(os.environ['TAHMO_USER'], os.environ['TAHMO_PASSWORD'])
 
-station_list = ["TA00134", "TA00252", "TA00567"]
-
-# station "TA00134" is empty, therefore we remove it from the list
-station_list.remove("TA00134")
+station_list = list(api.getStations())
 
 station_data = {}
 
 for station in station_list:
     station_data[station] = api.getStations()[station]
 
-station_default = 'TA00252'
+station_default = station_list[0]
 center_default = (station_data[station_default]['location']['latitude'], station_data[station_default]['location']['longitude'])
 zoom_default = 9
 
@@ -162,6 +160,7 @@ def Timeseries():
 @solara.component
 def Page():
     """Solara component for a page with two cards: View and StationSelect."""
+    
     with solara.Column(style={"min-width": "500px", "height": "500px"}):
         with solara.Row():
             StationSelect()
