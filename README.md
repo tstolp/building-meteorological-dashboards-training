@@ -4,7 +4,7 @@
 
 This repository contains a Jupyter Notebook that guides you through the process of creating interactive dashboards in Python using TAHMO and Open-Meteo APIs. By following this tutorial, you will learn how to retrieve weather data from both services, process the data, and create an informative dashboard using Solara.
 
-![video](data/images/dashboard.mp4)
+![dashboard](https://github.com/tstolp/training-seasonal-forecasting/assets/33895313/d45b001d-8042-4523-846b-2770c6363548)
 
 ## Prerequisites
 Before you begin, ensure you have the following:
