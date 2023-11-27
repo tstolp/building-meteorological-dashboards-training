@@ -1,45 +1,32 @@
 
 # training-weather-forecast-dashboards
 
-This repository contains a Jupyter Notebook that guides you through the process of creating interactive dashboards in Python using OpenWeather APIs. By following this tutorial, you will learn how to retrieve weather data from OpenWeatherMap, process the data, and create an informative and visually appealing dashboard using popular Python libraries.
+This repository contains a Jupyter Notebook that guides you through the process of creating interactive dashboards in Python using TAHMO and Open-Meteo APIs. By following this tutorial, you will learn how to retrieve weather data from both services, process the data, and create an informative dashboard using Solara.
 
 ## Prerequisites
 Before you begin, ensure you have the following:
 A GitHub account
 Access to GitHub Codespaces
 
-### 1. Getting Started
+### 1. Open GitHub Codespaces 
 Clone the Repository:
-
-'''bash
-Copy code
-git clone https://github.com/your-username/dashboard-openweather-python.git
-cd dashboard-openweather-python
-'''
-
-### 2. Open in GitHub Codespaces:
 Open the repository in GitHub Codespaces by clicking the "Code" button and selecting "Open with Codespaces."
 
-### 3. Run the Jupyter Notebook:
-Open the dashboard_openweather.ipynb file and follow the step-by-step instructions to create your dashboard.
+Another option is to clone this repository and work locally using devcontainers
+'''bash
+# Copy code
+git clone https://github.com/tstolp/training-weather-forecast-dashboards.git
+cd training-weather-forecast-dashboard
+'''
 
-## Contents
-The notebook is divided into the following sections:
+### 2. Run the Jupyter Notebook:
+Open the training-notebook.ipynb file and follow the step-by-step instructions to create your dashboard.
 
-## Introduction to OpenWeather API:
-
-- Learn about the OpenWeatherMap API and how to obtain an API key.
-Fetching Weather Data:
-
-- Use the OpenWeather API to retrieve current weather data for a specific location.
-Data Processing:
-
-- Clean and process the retrieved data for dashboard creation.
-Dashboard Creation:
-
-- Utilize Python libraries such as Plotly and Dash to create an interactive dashboard.
-Libraries Used
-
+### 3. Run using the Solara server
+'''bash
+# Copy code
+solara run sol.py --host=0.0.0.0
+'''
 
 ## Feedback and Contributions
 If you have any feedback or suggestions, feel free to open an issue or create a pull request. Contributions are highly welcomed!
