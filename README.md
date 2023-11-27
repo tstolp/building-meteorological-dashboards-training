@@ -25,7 +25,7 @@ git clone https://github.com/tstolp/training-weather-forecast-dashboards.git
 cd training-weather-forecast-dashboard
 ```
 
-### 2. Run the Jupyter Notebook: - Exécutez le Notebook Jupyter :
+### 2. Run the Jupyter Notebook 
 Open the training-notebook.ipynb file and follow the step-by-step instructions to create your dashboard.
 
 ### 3. Run using the Solara server
@@ -57,7 +57,7 @@ Avant de commencer, assurez-vous de disposer des éléments suivants :
 - Un compte GitHub
 - Accès à GitHub Codespaces
 
-### 1. Open GitHub Codespaces 
+### 1. Ouvrez GitHub Codespaces 
 
 Ouvrez le dépôt dans GitHub Codespaces en cliquant sur le bouton "Code" et en sélectionnant "Ouvrir avec Codespaces".
 
@@ -69,18 +69,18 @@ git clone https://github.com/tstolp/training-weather-forecast-dashboards.git
 cd training-weather-forecast-dashboard
 ```
 
-### 2. Run the Jupyter Notebook: - Exécutez le Notebook Jupyter :
+### 2. Exécutez le Notebook Jupyter
 
 Ouvrez le fichier training-notebook.ipynb et suivez les instructions étape par étape pour créer votre tableau de bord.
 
-### 3. Run using the Solara server
+### 3. Exécutez en utilisant le serveur Solara.
 
 ```bash
 # Copy code
 solara run sol.py --host=0.0.0.0
 ```
 
-## Feedback and Contributions
-If you have any feedback or suggestions, feel free to open an issue or create a pull request. Contributions are highly welcomed!
+## Retours et Contributions
+Si vous avez des commentaires ou des suggestions, n'hésitez pas à ouvrir un problème (issue) ou à créer une pull request. Les contributions sont les bienvenues !
 
-Happy dashboarding! 🌦️📊
+Bonne création de tableau de bord ! 🌦️📊
