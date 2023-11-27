@@ -13,20 +13,20 @@ Clone the Repository:
 Open the repository in GitHub Codespaces by clicking the "Code" button and selecting "Open with Codespaces."
 
 Another option is to clone this repository and work locally using devcontainers
-'''bash
+```bash
 # Copy code
 git clone https://github.com/tstolp/training-weather-forecast-dashboards.git
 cd training-weather-forecast-dashboard
-'''
+```
 
 ### 2. Run the Jupyter Notebook:
 Open the training-notebook.ipynb file and follow the step-by-step instructions to create your dashboard.
 
 ### 3. Run using the Solara server
-'''bash
+```bash
 # Copy code
 solara run sol.py --host=0.0.0.0
-'''
+```
 
 ## Feedback and Contributions
 If you have any feedback or suggestions, feel free to open an issue or create a pull request. Contributions are highly welcomed!
