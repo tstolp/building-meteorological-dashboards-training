@@ -1,4 +1,5 @@
-# training-weather-forecast-dashboards
+# building-meteorological-dashboards-training
+
 
 ![alt text](data/images/partners.svg)
 
@@ -21,8 +22,8 @@ Another option is to clone this repository and work locally using devcontainers
 
 ```bash
 # Copy code
-git clone https://github.com/tstolp/training-weather-forecast-dashboards.git
-cd training-weather-forecast-dashboard
+git clone https://github.com/tstolp/building-meteorological-dashboards-training.git
+cd building-meteorological-dashboards-training
 ```
 
 ### 2. Run the Jupyter Notebook 
@@ -41,9 +42,9 @@ If you have any feedback or suggestions, feel free to open an issue or create a 
 Happy dashboarding! 🌦️📊
 
 
-<hr style="border:2px solid gray">
 
----
+# formation-construction-tableaux-de-bord-meteorologique
+
 
 **FR** 
 
