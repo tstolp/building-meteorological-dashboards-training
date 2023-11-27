@@ -1,21 +1,19 @@
 
-import solara
-import ipyleaflet
-from ipywidgets import HTML
-import altair as alt
-import pandas as pd
 import datetime
-import solara
+import os
+
+import altair as alt
 import ipyleaflet
-import TAHMO
-from ipywidgets import HTML
 import openmeteo_requests
-from openmeteo_sdk.Variable import Variable
-from openmeteo_sdk.Aggregation import Aggregation
-import requests_cache
 import pandas as pd
+import requests_cache
+import solara
+from ipywidgets import HTML
+from openmeteo_sdk.Aggregation import Aggregation
+from openmeteo_sdk.Variable import Variable
 from retry_requests import retry
-import os 
+
+import TAHMO
 
 # Setup the Open-Meteo API client with cache and retry on error
 cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
@@ -24,7 +22,11 @@ openmeteo = openmeteo_requests.Client(session = retry_session)
 
 # Create a TAHMO API wrapper and set credentials
 api = TAHMO.apiWrapper()
-api.setCredentials(os.environ['TAHMO_USER'], os.environ['TAHMO_PASSWORD'])
+
+TAHMO_USER='T.Stolp@hkv.nl'
+TAHMO_PASSWORD='X9R@zNX6dCeq45K'
+
+api.setCredentials(TAHMO_USER, TAHMO_PASSWORD)
 
 station_list = list(api.getStations())
 
