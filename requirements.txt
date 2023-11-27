@@ -11,3 +11,4 @@ altair
 openmeteo-requests
 requests-cache 
 retry-requests
+python-dotenv
