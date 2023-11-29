@@ -37,12 +37,9 @@ for station in station_list:
 
 station_default = station_list[0]
 center_default = (station_data[station_default]['location']['latitude'], station_data[station_default]['location']['longitude'])
-zoom_default = 9
-
 
 # Define reactive variables for station data
 station = solara.reactive(station_default)
-zoom = solara.reactive(zoom_default)
 center = solara.reactive(center_default)
 
 
@@ -162,6 +159,10 @@ def Timeseries():
 @solara.component
 def Page():
     """Solara component for a page with two cards: View and StationSelect."""
+    
+    with solara.AppBarTitle():
+        solara.Text("TAHMO precipitation measurements vs. ECMWF ensemble forecast")
+    solara.Info("Select a TAHMO station in the dropdown menu.")
     
     with solara.Column(style={"min-width": "500px", "height": "500px"}):
         with solara.Row():
