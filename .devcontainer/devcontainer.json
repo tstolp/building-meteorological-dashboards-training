@@ -8,7 +8,7 @@
     "customizations": {
       "codespaces": {
         "openFiles": [
-          "README.md"
+          "training-notebook-EN.ipynb"
         ]
       },
       "vscode": {
