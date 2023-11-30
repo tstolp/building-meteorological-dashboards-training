@@ -52,7 +52,19 @@ def set_station(value):
     station.value = value
     center.value = (station_data[value]['location']['latitude'], station_data[value]['location']['longitude'])
 
-@ solara.component
+
+# def on_click(val):
+
+
+#     # popup_list = []
+#     # for s in station_list:
+#     #     location = (station_data[s]['location']['latitude'], station_data[s]['location']['longitude'])
+
+
+#     #     popup_list.append(popup)
+
+
+@solara.component
 def StationSelect():
     """Solara component for a station selection dropdown."""
     solara.Select(label="station", values=station_list, value=station.value, on_value=set_station, style={"z-index": "10000"})
@@ -68,19 +80,8 @@ def View():
         marker = ipyleaflet.Marker.element(icon=icon_rain, location=location, title=title, draggable=False)
         marker_list.append(marker)
 
-    # popup_list = []
-    # for s in station_list:
-    #     location = (station_data[s]['location']['latitude'], station_data[s]['location']['longitude'])
-    #     text = HTML()
-    #     text.value = station_data[s]['location']['name']
-    #     popup = ipyleaflet.Popup(location=location,
-    #                 child=text, 
-    #                 auto_pan=False,
-    #                 auto_close=False)
-    #     popup_list.append(popup)
-
     ipyleaflet.Map.element(center=center.value,
-                           zoom=6,
+                        zoom=6,
                         scroll_wheel_zoom=True, 
                         layers=[ipyleaflet.TileLayer.element(url=ipyleaflet.basemaps.OpenStreetMap.Mapnik.build_url())] + marker_list # + popup_list
                         )
@@ -168,7 +169,7 @@ def Timeseries():
     df_tahmo = api.getMeasurements(station.value, startDate=startDate.strftime("%Y-%m-%d"), endDate=today.strftime("%Y-%m-%d"), variables=variables)
     df_tahmo.index.name = 'Timestamp'
     df_tahmo = process_tahmo_precip_data(df_tahmo)
-    bar_tahmo =  alt.Chart(df_tahmo).mark_bar(opacity=0.75,).encode(x="date", y="precipitation", tooltip=['precipitation', 'date']).interactive()
+    bar_tahmo =  alt.Chart(df_tahmo).mark_bar(opacity=0.75,).encode(x=alt.X("date:T"), y=alt.Y("precipitation:Q"), tooltip=['precipitation', 'date']).interactive()
     df_hourly = get_ecmwf_precipitation_ensemble(station_data[station.value]['location']['longitude'], station_data[station.value]['location']['latitude'])
     df_ecmwf_ensemble = process_ecmwf_ensemble_precip_data(df_hourly)
     ensemble_df = pd.DataFrame(data={'min' : df_ecmwf_ensemble.set_index('date').min(axis=1), 'max' : df_ecmwf_ensemble.set_index('date').max(axis=1), 'mean' : df_ecmwf_ensemble.set_index('date').mean(axis=1)}).reset_index()
@@ -176,7 +177,7 @@ def Timeseries():
     bar_ecmwf = alt.Chart(ensemble_df).mark_bar(opacity=0.75, color='orange').encode(x='date', y='mean', tooltip=['mean', 'date'])
     rule = alt.Chart(pd.DataFrame({'date': [today.strftime("%Y-%m-%d")], 'color': ['black']})).mark_rule().encode(x='date:T') 
     chart = area_ecmwf + rule + bar_tahmo + bar_ecmwf
-    solara.display(chart.properties(width=1200, height=300).interactive())
+    solara.display(chart.properties(width=1200, height=300, title=f"TAHMO station: {station_data[station.value]['location']['name']}").interactive())
 
 @solara.component
 def Page():
