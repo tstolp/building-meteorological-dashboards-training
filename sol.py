@@ -29,7 +29,6 @@ TAHMO_PASSWORD='X9R@zNX6dCeq45K'
 api.setCredentials(TAHMO_USER, TAHMO_PASSWORD)
 
 station_list = list(api.getStations())
-
 station_data = {}
 
 for station in station_list:
@@ -42,6 +41,12 @@ center_default = (station_data[station_default]['location']['latitude'], station
 station = solara.reactive(station_default)
 center = solara.reactive(center_default)
 
+icon_rain = ipyleaflet.AwesomeIcon(
+    name='tint',
+    marker_color='white',
+    icon_color='blue',
+    spin=False
+)
 
 def set_station(value):
     station.value = value
@@ -56,11 +61,28 @@ def StationSelect():
 def View():
     """Solara component for displaying a map view with a marker for the selected station."""
     
+    marker_list = []
+    for s in station_list:
+        location = (station_data[s]['location']['latitude'], station_data[s]['location']['longitude'])
+        title = station_data[s]['location']['name']
+        marker = ipyleaflet.Marker.element(icon=icon_rain, location=location, title=title, draggable=False)
+        marker_list.append(marker)
+
+    # popup_list = []
+    # for s in station_list:
+    #     location = (station_data[s]['location']['latitude'], station_data[s]['location']['longitude'])
+    #     text = HTML()
+    #     text.value = station_data[s]['location']['name']
+    #     popup = ipyleaflet.Popup(location=location,
+    #                 child=text, 
+    #                 auto_pan=False,
+    #                 auto_close=False)
+    #     popup_list.append(popup)
+
     ipyleaflet.Map.element(center=center.value,
-                           zoom=9,
-                           on_center=center.set,
+                           zoom=6,
                         scroll_wheel_zoom=True, 
-                        layers=[ipyleaflet.TileLayer.element(url=ipyleaflet.basemaps.OpenStreetMap.Mapnik.build_url())] + [ipyleaflet.Marker.element(location=(station_data[s]['location']['latitude'], station_data[s]['location']['longitude']), draggable=False) for s in station_list] 
+                        layers=[ipyleaflet.TileLayer.element(url=ipyleaflet.basemaps.OpenStreetMap.Mapnik.build_url())] + marker_list # + popup_list
                         )
 
 def process_tahmo_precip_data(df):
